@@ -1,0 +1,86 @@
+name: "Release Dev Container Features"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: "Publish Features"
+        uses: devcontainers/action@v1
+        with:
+          publish-features: "true"
+          base-path-to-features: "./src"
+          generate-docs: "true"
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create PR for Documentation
+        id: push_image_info
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          echo "Start."
+
+          # Create new branch for documentation updates
+          branch=automated-documentation-update-$GITHUB_RUN_ID
+          echo "Creating branch: $branch"
+
+          # Create branch via API (this will be automatically signed)
+          gh api \
+            --method POST \
+            /repos/$GITHUB_REPOSITORY/git/refs \
+            -f ref="refs/heads/$branch" \
+            -f sha="$GITHUB_SHA"
+
+          message='Automated documentation update [skip ci]'
+
+          # Find all updated README.md files
+          readmes=$(find . -name "README.md" -path "*/*/README.md")
+
+          # Check if any README files were found
+          if [ -z "$readmes" ]; then
+            echo "No README files found to update"
+            exit 0
+          fi
+
+          # Commit each README file via GitHub API (automatically signed)
+          for readme in $readmes; do
+            # Get the current file from the source branch to get its SHA
+            file_path=${readme:2}  # Remove leading ./
+            echo "Committing updates to $file_path"
+            
+            # Get current file SHA from the new branch
+            file_sha=$(gh api \
+              --method GET \
+              /repos/$GITHUB_REPOSITORY/contents/$file_path?ref=main \
+              -q '.sha')
+            
+            echo "SHA for $file_path: $file_sha"
+            
+            # Use GitHub API to commit the file (automatically signed)
+            gh api \
+              --method PUT \
+              /repos/$GITHUB_REPOSITORY/contents/$file_path \
+              -f message="$message" \
+              -f content="$(base64 -i $readme)" \
+              -f sha="$file_sha" \
+              -f branch="$branch" \
+              || echo "No changes to commit for $file_path"
+          done
+
+          # Create PR
+          gh pr create --title "$message" --body "$message" --head "$branch" --base "main" || echo "No changes to create PR for"
