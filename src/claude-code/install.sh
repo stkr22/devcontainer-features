@@ -211,6 +211,9 @@ setup_config_directory() {
     if [ -d "/claude-config" ]; then
         echo "Setting up config directory symlink..."
 
+        # Ensure home directory exists (may not exist during container build)
+        mkdir -p "$home_dir"
+
         # Remove existing .claude if it's a regular directory (not a symlink)
         if [ -d "$claude_dir" ] && [ ! -L "$claude_dir" ]; then
             # Move any existing content to the volume
