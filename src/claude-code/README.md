@@ -7,7 +7,7 @@ Installs the Claude Code CLI using the native binary installer
 
 ```json
 "features": {
-    "ghcr.io/anthropics/devcontainer-features/claude-code:2": {}
+    "ghcr.io/stkr22/devcontainer-features/claude-code:2": {}
 }
 ```
 
@@ -18,7 +18,6 @@ Installs the Claude Code CLI using the native binary installer
 | remoteUser | The username in the container (for mount paths) | string | vscode |
 | persistConfig | Use a volume to persist Claude config between rebuilds | boolean | true |
 | persistHistory | Use a volume to persist command history between rebuilds | boolean | true |
-
 
 ## Customizations
 
@@ -113,4 +112,4 @@ Whether to use a volume for persistent command history. Defaults to `true`.
 
 ---
 
-_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/anthropics/devcontainer-features/blob/main/src/claude-code/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
+_Note: This file was auto-generated from the [devcontainer-feature.json](https://github.com/stkr22/devcontainer-features/blob/main/src/claude-code/devcontainer-feature.json).  Add additional notes to a `NOTES.md`._
