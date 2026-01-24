@@ -22,6 +22,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: "Create dummy credentials file for bind mount"
+        run: |
+          mkdir -p ~/.claude
+          echo '{}' > ~/.claude/.credentials.json
+
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
 
@@ -39,6 +44,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: "Create dummy credentials file for bind mount"
+        run: |
+          mkdir -p ~/.claude
+          echo '{}' > ~/.claude/.credentials.json
+
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
 
@@ -50,6 +60,11 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
+
+      - name: "Create dummy credentials file for bind mount"
+        run: |
+          mkdir -p ~/.claude
+          echo '{}' > ~/.claude/.credentials.json
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
