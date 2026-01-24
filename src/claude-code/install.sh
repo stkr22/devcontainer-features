@@ -171,13 +171,32 @@ install_claude_code() {
     # Clean up
     rm -f "$binary_path"
 
-    # Verify installation
-    if command -v claude >/dev/null; then
-        echo "Claude Code CLI installed successfully!"
-        claude --version
+    # Verify installation - check known install locations
+    # The installer puts the binary in ~/.local/bin/claude (for current user, likely root during build)
+    local claude_bin=""
+    if [ -x "$HOME/.local/bin/claude" ]; then
+        claude_bin="$HOME/.local/bin/claude"
+    elif [ -x "/root/.local/bin/claude" ]; then
+        claude_bin="/root/.local/bin/claude"
+    elif [ -x "/usr/local/bin/claude" ]; then
+        claude_bin="/usr/local/bin/claude"
+    elif command -v claude >/dev/null 2>&1; then
+        claude_bin="claude"
+    fi
+
+    if [ -n "$claude_bin" ]; then
+        echo "Claude Code CLI installed successfully at: $claude_bin"
+        "$claude_bin" --version
+
+        # Create symlink in /usr/local/bin for system-wide availability
+        if [ "$claude_bin" != "/usr/local/bin/claude" ] && [ ! -e "/usr/local/bin/claude" ]; then
+            echo "Creating symlink at /usr/local/bin/claude..."
+            ln -s "$claude_bin" /usr/local/bin/claude || true
+        fi
+
         return 0
     else
-        echo "ERROR: Claude Code CLI installation failed!"
+        echo "ERROR: Claude Code CLI installation failed - binary not found!"
         return 1
     fi
 }
