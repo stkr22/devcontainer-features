@@ -188,10 +188,12 @@ install_claude_code() {
         echo "Claude Code CLI installed successfully at: $claude_bin"
         "$claude_bin" --version
 
-        # Create symlink in /usr/local/bin for system-wide availability
+        # Copy binary to /usr/local/bin for system-wide availability
+        # (copy instead of symlink to ensure it works for all users)
         if [ "$claude_bin" != "/usr/local/bin/claude" ] && [ ! -e "/usr/local/bin/claude" ]; then
-            echo "Creating symlink at /usr/local/bin/claude..."
-            ln -s "$claude_bin" /usr/local/bin/claude || true
+            echo "Copying claude to /usr/local/bin/claude..."
+            cp "$claude_bin" /usr/local/bin/claude
+            chmod +x /usr/local/bin/claude
         fi
 
         return 0
