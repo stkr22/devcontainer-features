@@ -239,6 +239,29 @@ setup_config_directory() {
     fi
 }
 
+# Function to create default settings file
+setup_default_settings() {
+    local user="$1"
+    local config_dir="/claude-config"
+    local settings_file="$config_dir/settings.json"
+
+    if [ -d "$config_dir" ] && [ ! -f "$settings_file" ]; then
+        echo "Creating default settings..."
+        cat > "$settings_file" << 'EOF'
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "env": {
+    "DISABLE_TELEMETRY": "1"
+  }
+}
+EOF
+        chown "$user:$user" "$settings_file" 2>/dev/null || true
+    fi
+}
+
 # Main script
 main() {
     # Detect and use appropriate package manager
@@ -255,6 +278,9 @@ main() {
 
     # Setup config directory and fix permissions for mounted volumes
     setup_config_directory "$REMOTE_USER"
+
+    # Create default settings file
+    setup_default_settings "$REMOTE_USER"
 
     echo "Claude Code feature installation complete!"
 }
