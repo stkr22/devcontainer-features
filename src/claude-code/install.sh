@@ -188,10 +188,12 @@ install_claude_code() {
         echo "Claude Code CLI installed successfully at: $claude_bin"
         "$claude_bin" --version
 
-        # Create symlink in /usr/local/bin for system-wide availability
+        # Copy binary to /usr/local/bin for system-wide availability
+        # (copy instead of symlink to ensure it works for all users)
         if [ "$claude_bin" != "/usr/local/bin/claude" ] && [ ! -e "/usr/local/bin/claude" ]; then
-            echo "Creating symlink at /usr/local/bin/claude..."
-            ln -s "$claude_bin" /usr/local/bin/claude || true
+            echo "Copying claude to /usr/local/bin/claude..."
+            cp "$claude_bin" /usr/local/bin/claude
+            chmod +x /usr/local/bin/claude
         fi
 
         return 0
@@ -210,6 +212,9 @@ setup_config_directory() {
     # If /claude-config volume is mounted, symlink ~/.claude to it
     if [ -d "/claude-config" ]; then
         echo "Setting up config directory symlink..."
+
+        # Ensure home directory exists (may not exist during container build)
+        mkdir -p "$home_dir"
 
         # Remove existing .claude if it's a regular directory (not a symlink)
         if [ -d "$claude_dir" ] && [ ! -L "$claude_dir" ]; then

@@ -14,12 +14,18 @@ jobs:
       matrix:
         features:
           - claude-code
+          - uv
         baseImage:
           - debian:latest
           - ubuntu:latest
-          - mcr.microsoft.com/devcontainers/base:ubuntu
+          - mcr.microsoft.com/devcontainers/base:2.1.3-trixie
     steps:
       - uses: actions/checkout@v6
+
+      - name: "Create dummy credentials file for bind mount"
+        run: |
+          mkdir -p ~/.claude
+          echo '{}' > ~/.claude/.credentials.json
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -34,8 +40,14 @@ jobs:
       matrix:
         features:
           - claude-code
+          - uv
     steps:
       - uses: actions/checkout@v6
+
+      - name: "Create dummy credentials file for bind mount"
+        run: |
+          mkdir -p ~/.claude
+          echo '{}' > ~/.claude/.credentials.json
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli
@@ -48,6 +60,11 @@ jobs:
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
+
+      - name: "Create dummy credentials file for bind mount"
+        run: |
+          mkdir -p ~/.claude
+          echo '{}' > ~/.claude/.credentials.json
 
       - name: "Install latest devcontainer CLI"
         run: npm install -g @devcontainers/cli

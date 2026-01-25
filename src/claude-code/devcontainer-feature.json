@@ -1,7 +1,7 @@
 {
     "name": "Claude Code CLI",
     "id": "claude-code",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "Installs the Claude Code CLI using the native binary installer",
     "options": {
         "remoteUser": {
