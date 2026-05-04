@@ -1,7 +1,7 @@
 {
     "name": "uv",
     "id": "uv",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Installs uv, the fast Python package manager from Astral",
     "options": {
         "version": {
@@ -14,6 +14,8 @@
     "licenseURL": "https://github.com/stkr22/devcontainer-features/blob/main/LICENSE",
     "containerEnv": {
         "VIRTUAL_ENV": "/workspaces/.venv",
-        "UV_PROJECT_ENVIRONMENT": "/workspaces/.venv"
+        "UV_PROJECT_ENVIRONMENT": "/workspaces/.venv",
+        "UV_PYTHON_PREFERENCE": "only-managed",
+        "UV_PYTHON_DOWNLOADS": "auto"
     }
 }
