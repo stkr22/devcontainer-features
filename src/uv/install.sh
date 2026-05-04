@@ -14,6 +14,12 @@
 # Some versions of ksh have no `local` keyword. Alias it to `typeset`, but
 # beware this makes variables global with f()-style function syntax in ksh93.
 # mksh has this alias by default.
+# Install to a system-wide location so uv is on PATH without shell rc modifications
+UV_INSTALL_DIR="${UV_INSTALL_DIR:-/usr/local/bin}"
+UV_NO_MODIFY_PATH=1
+UV_DISABLE_UPDATE=1
+export UV_INSTALL_DIR UV_NO_MODIFY_PATH UV_DISABLE_UPDATE
+
 if ! command -v curl > /dev/null 2>&1 && ! command -v wget > /dev/null 2>&1; then
     if command -v apt-get > /dev/null 2>&1; then
         apt-get update -y && apt-get install -y --no-install-recommends curl ca-certificates
