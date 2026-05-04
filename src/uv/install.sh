@@ -14,6 +14,17 @@
 # Some versions of ksh have no `local` keyword. Alias it to `typeset`, but
 # beware this makes variables global with f()-style function syntax in ksh93.
 # mksh has this alias by default.
+if ! command -v curl > /dev/null 2>&1 && ! command -v wget > /dev/null 2>&1; then
+    if command -v apt-get > /dev/null 2>&1; then
+        apt-get update -y && apt-get install -y --no-install-recommends curl ca-certificates
+    elif command -v apk > /dev/null 2>&1; then
+        apk add --no-cache curl ca-certificates
+    else
+        echo "ERROR: need 'curl or wget' (command not found) and cannot install automatically" >&2
+        exit 1
+    fi
+fi
+
 has_local() {
     # shellcheck disable=SC2034  # deliberately unused
     local _has_local
