@@ -1,7 +1,7 @@
 {
     "name": "uv",
     "id": "uv",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Installs uv, the fast Python package manager from Astral",
     "options": {
         "version": {
