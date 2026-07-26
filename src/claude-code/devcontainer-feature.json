@@ -1,7 +1,7 @@
 {
     "name": "Claude Code CLI",
     "id": "claude-code",
-    "version": "4.0.0",
+    "version": "4.0.1",
     "description": "Installs the Claude Code CLI using the native binary installer",
     "documentationURL": "https://github.com/stkr22/devcontainer-features/tree/main/src/claude-code",
     "licenseURL": "https://github.com/stkr22/devcontainer-features/blob/main/LICENSE",

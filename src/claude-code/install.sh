@@ -235,8 +235,15 @@ setup_config_directory() {
         ln -s /claude-config "$claude_dir"
     fi
 
-    # Fix ownership so seeded volumes are writable by the remote user
+    # Fix ownership so seeded volumes are writable by the remote user. This is
+    # best-effort: chown can silently fail (e.g. $user not resolvable in this
+    # image's user database at build time), which would otherwise leave these
+    # dirs root-owned and unwritable by a non-root runtime user. Back it with
+    # a permissive chmod so writability doesn't depend on that resolution
+    # succeeding — these are single-user scratch/config paths, not a
+    # multi-tenant security boundary.
     chown -R "$user:$user" /claude-config /claude-memory 2>/dev/null || true
+    chmod -R a+rwX /claude-config /claude-memory 2>/dev/null || true
     chown -h "$user:$user" "$claude_dir" 2>/dev/null || true
 }
 
