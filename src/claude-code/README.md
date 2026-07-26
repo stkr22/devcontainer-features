@@ -11,6 +11,8 @@ Installs the Claude Code CLI using the native binary installer
 }
 ```
 
+
+
 ## Customizations
 
 ### VS Code Extensions
