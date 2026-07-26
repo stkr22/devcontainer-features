@@ -1,0 +1,28 @@
+{
+	"name": "devcontainer-features-dev",
+	"image": "mcr.microsoft.com/devcontainers/base:2.1.2-trixie@sha256:36751f1ee2f30745a649afc2b2061f321bacdaa0617159901fe6725b34c93df4",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"streetsidesoftware.code-spell-checker",
+				"christian-kohler.path-intellisense",
+				"tamasfe.even-better-toml",
+				"github.vscode-github-actions",
+				"oderwat.indent-rainbow",
+				"vivaxy.vscode-conventional-commits",
+				"Anthropic.claude-code"
+			]
+		}
+	},
+	"mounts": [
+		{
+			"source": "claude-code-config-${devcontainerId}",
+			"target": "/home/vscode/.claude",
+			"type": "volume"
+		}
+	],
+	"remoteEnv": {
+		"CLAUDE_CODE_OAUTH_TOKEN": "${localEnv:CLAUDE_CODE_OAUTH_TOKEN}"
+	},
+	"postCreateCommand": "sudo chown vscode:vscode /home/vscode/.claude"
+}

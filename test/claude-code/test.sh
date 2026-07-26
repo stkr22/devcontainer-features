@@ -9,5 +9,15 @@ source dev-container-features-test-lib
 check "claude cli installed" command -v claude
 check "claude version" claude --version
 
+# Config directory: symlink and default settings seeded into the volume
+check "config dir exists" test -d /claude-config
+check "claude dir is symlink" test -L "$HOME/.claude"
+check "settings.json exists" test -f /claude-config/settings.json
+check "settings has autoMemoryDirectory" grep -q '"autoMemoryDirectory": "/claude-memory"' /claude-config/settings.json
+
+# Memory directory: mounted and writable by the remote user
+check "memory dir exists" test -d /claude-memory
+check "memory dir writable" touch /claude-memory/.write-test
+
 # Report results
 reportResults

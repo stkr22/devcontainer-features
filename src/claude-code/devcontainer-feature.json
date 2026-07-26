@@ -1,25 +1,8 @@
 {
     "name": "Claude Code CLI",
     "id": "claude-code",
-    "version": "2.0.3",
+    "version": "4.0.1",
     "description": "Installs the Claude Code CLI using the native binary installer",
-    "options": {
-        "remoteUser": {
-            "type": "string",
-            "default": "vscode",
-            "description": "The username in the container (for mount paths)"
-        },
-        "persistConfig": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use a volume to persist Claude config between rebuilds"
-        },
-        "persistHistory": {
-            "type": "boolean",
-            "default": true,
-            "description": "Use a volume to persist command history between rebuilds"
-        }
-    },
     "documentationURL": "https://github.com/stkr22/devcontainer-features/tree/main/src/claude-code",
     "licenseURL": "https://github.com/stkr22/devcontainer-features/blob/main/LICENSE",
     "mounts": [
@@ -29,14 +12,9 @@
             "type": "volume"
         },
         {
-            "source": "claude-code-history-${devcontainerId}",
-            "target": "/commandhistory",
+            "source": "claude-code-memory-${devcontainerId}",
+            "target": "/claude-memory",
             "type": "volume"
-        },
-        {
-            "source": "${localEnv:HOME}/.claude/.credentials.json",
-            "target": "/claude-config/.credentials.json",
-            "type": "bind"
         }
     ],
     "containerEnv": {

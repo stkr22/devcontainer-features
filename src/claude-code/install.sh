@@ -3,8 +3,11 @@ set -eu
 
 echo "Activating feature 'claude-code'"
 
-# Get the remote user from options (defaults to vscode)
-REMOTE_USER="${REMOTEUSER:-vscode}"
+# _REMOTE_USER / _REMOTE_USER_HOME are injected by the devcontainer CLI for
+# every feature, already resolved against the container's actual remoteUser
+# config — no feature option needed, and no risk of it drifting out of sync.
+REMOTE_USER="${_REMOTE_USER:-vscode}"
+REMOTE_USER_HOME="${_REMOTE_USER_HOME:-/home/$REMOTE_USER}"
 
 GCS_BUCKET="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases"
 DOWNLOAD_DIR="/tmp/claude-install"
@@ -204,39 +207,44 @@ install_claude_code() {
 }
 
 # Function to setup config directory symlink and fix permissions
+#
+# Note: this script runs at image BUILD time, before any volumes are mounted.
+# We create the mount-point directories here with the right ownership so that
+# Docker/Podman's copy-up behavior seeds fresh named volumes from them.
 setup_config_directory() {
     local user="$1"
-    local home_dir="/home/$user"
+    local home_dir="$2"
     local claude_dir="$home_dir/.claude"
 
-    # If /claude-config volume is mounted, symlink ~/.claude to it
-    if [ -d "/claude-config" ]; then
-        echo "Setting up config directory symlink..."
+    echo "Setting up config directory symlink..."
 
-        # Ensure home directory exists (may not exist during container build)
-        mkdir -p "$home_dir"
+    mkdir -p /claude-config /claude-memory
 
-        # Remove existing .claude if it's a regular directory (not a symlink)
-        if [ -d "$claude_dir" ] && [ ! -L "$claude_dir" ]; then
-            # Move any existing content to the volume
-            cp -a "$claude_dir/." /claude-config/ 2>/dev/null || true
-            rm -rf "$claude_dir"
-        fi
+    # Ensure home directory exists (may not exist during container build)
+    mkdir -p "$home_dir"
 
-        # Create symlink if it doesn't exist
-        if [ ! -L "$claude_dir" ]; then
-            ln -s /claude-config "$claude_dir"
-        fi
-
-        # Fix permissions on the volume
-        chown -R "$user:$user" /claude-config 2>/dev/null || true
+    # Remove existing .claude if it's a regular directory (not a symlink)
+    if [ -d "$claude_dir" ] && [ ! -L "$claude_dir" ]; then
+        # Move any existing content to the volume
+        cp -a "$claude_dir/." /claude-config/ 2>/dev/null || true
+        rm -rf "$claude_dir"
     fi
 
-    # Fix permissions for command history directory if it exists
-    if [ -d "/commandhistory" ]; then
-        echo "Fixing permissions for /commandhistory..."
-        chown -R "$user:$user" "/commandhistory" 2>/dev/null || true
+    # Create symlink if it doesn't exist
+    if [ ! -L "$claude_dir" ]; then
+        ln -s /claude-config "$claude_dir"
     fi
+
+    # Fix ownership so seeded volumes are writable by the remote user. This is
+    # best-effort: chown can silently fail (e.g. $user not resolvable in this
+    # image's user database at build time), which would otherwise leave these
+    # dirs root-owned and unwritable by a non-root runtime user. Back it with
+    # a permissive chmod so writability doesn't depend on that resolution
+    # succeeding — these are single-user scratch/config paths, not a
+    # multi-tenant security boundary.
+    chown -R "$user:$user" /claude-config /claude-memory 2>/dev/null || true
+    chmod -R a+rwX /claude-config /claude-memory 2>/dev/null || true
+    chown -h "$user:$user" "$claude_dir" 2>/dev/null || true
 }
 
 # Function to create default settings file
@@ -255,7 +263,8 @@ setup_default_settings() {
   },
   "env": {
     "DISABLE_TELEMETRY": "1"
-  }
+  },
+  "autoMemoryDirectory": "/claude-memory"
 }
 EOF
         chown "$user:$user" "$settings_file" 2>/dev/null || true
@@ -277,7 +286,7 @@ main() {
     install_claude_code || exit 1
 
     # Setup config directory and fix permissions for mounted volumes
-    setup_config_directory "$REMOTE_USER"
+    setup_config_directory "$REMOTE_USER" "$REMOTE_USER_HOME"
 
     # Create default settings file
     setup_default_settings "$REMOTE_USER"
