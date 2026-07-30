@@ -4,5 +4,12 @@
         "features": {
             "claude-code": {}
         }
+    },
+    "root_user": {
+        "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+        "remoteUser": "root",
+        "features": {
+            "claude-code": {}
+        }
     }
 }

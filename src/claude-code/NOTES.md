@@ -15,6 +15,33 @@ All volumes are named using the `${devcontainerId}` variable to ensure isolation
 
 To share memory across all your devcontainers instead of per-project, override the mount in your `devcontainer.json` with a statically named volume (e.g. `"source": "claude-memory-shared"`).
 
+## Containers that run as root
+
+Claude Code refuses to start in bypass-permissions mode when its process runs as uid 0:
+
+```
+--dangerously-skip-permissions cannot be used with root/sudo privileges for security reasons
+```
+
+The VS Code extension requests that mode for its default "auto" permission mode, so in a container whose `remoteUser` is `root` — plain `debian`/`ubuntu` images, or any image without a non-root user — the extension cannot spawn Claude at all and fails immediately with exit code 1. The integrated terminal's `claude` is affected too as soon as you pass `--dangerously-skip-permissions`.
+
+The only two escape hatches the binary honours are `IS_SANDBOX=1` and `CLAUDE_CODE_BUBBLEWRAP`, so this feature sets `IS_SANDBOX=1` in `containerEnv`. A devcontainer is a disposable container, which is what that flag is meant to assert, and setting it in `containerEnv` (rather than a shell profile) means the extension host sees it regardless of `userEnvProbe`.
+
+Two consequences worth knowing:
+
+- The workspace is a bind mount from the host, so bypass-permissions as root can still damage host files under the workspace folder. The guard being lifted is about uid 0 inside the container, not about isolation from your machine.
+- If you deploy `/etc/claude-code/managed-settings.json` with `disableNoSandbox`, `IS_SANDBOX=1` makes Claude Code treat the environment as already sandboxed instead of forcing its own sandbox.
+
+To re-arm the guard, override the variable in your `devcontainer.json` (any value other than exactly `1` counts as unset for this check):
+
+```json
+{
+    "containerEnv": {
+        "IS_SANDBOX": "0"
+    }
+}
+```
+
 ## Authentication
 
 To use Claude Code, you need to authenticate. You have two options:
